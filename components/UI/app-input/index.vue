@@ -1,23 +1,28 @@
 <template>
-    <div class="flex flex-col gap-4 rounded-xl border border-main-gray p-4 outline-none transition-colors hover:border-gray-hover focus:border-focused-input" tabindex="0">
+    <div
+        class="flex flex-col gap-4 rounded-xl border border-main-gray p-4 outline-none transition-colors hover:border-gray-hover focus:border-focused-input"
+        tabindex="0"
+        :class="{ 'border-focused-input': isInputFocused }"
+    >
         <div class="flex items-center justify-between gap-3">
             <span class="text-white">From</span>
             <span class="text-white">Balance:&nbsp;--&nbsp;USDT</span>
         </div>
-        <div class="flex items-center justify-between">
-            <div class="flex w-1/2 flex-col">
+        <div class="flex w-full items-center justify-between">
+            <div class="relative flex w-full flex-col">
                 <input
-                    v-model="inputValue"
-                    type="number"
+                    :value="props.modelValue"
                     autocomplete="off"
                     placeholder="0.01 - 2500000"
-                    class="border-none bg-transparent text-xl font-medium text-white outline-none placeholder:text-gray-hover"
+                    class="h-7 w-full border-none bg-transparent text-xl font-medium text-white outline-none placeholder:text-gray-hover"
                     tabindex="-1"
+                    @input="onInput"
+                    @keypress="onInvalidKey"
                 />
-                <span class="text-xs font-normal text-gray-hover">${{ inputValue ? inputValue : '0.00' }}</span>
+                <span class="text-xs font-normal text-gray-hover">${{ props.modelValue ? props.modelValue : '0.00' }}</span>
             </div>
-            <button type="button" class="flex w-1/2 items-center justify-end [&>svg]:hover:text-white" tabindex="-1" @click="$emit('select-token')">
-                <crypto-icon symbol="usdc" size="24" class="mr-[6px]" />
+            <button type="button" class="flex w-max shrink-0 items-center justify-end [&>svg]:hover:text-white" tabindex="-1" @click="emit('select-token')">
+                <crypto-icon symbol="sol" size="20" class="mr-[6px]" />
                 <span class="text-base font-medium text-white">USDT</span>
                 <chevron-down-icon class="ml-2 size-5 shrink-0 text-gray-hover transition-colors" />
             </button>
@@ -26,6 +31,30 @@
 </template>
 <script setup lang="ts">
 import { ChevronDownIcon } from '@heroicons/vue/20/solid'
-const inputValue = defineModel<string | number>()
-defineEmits<{ (e: 'select-token'): void }>()
+const isInputFocused = ref<boolean>(false)
+const props = defineProps<{ modelValue: number | undefined }>()
+const emit = defineEmits<{ (e: 'select-token'): void; (e: 'update:modelValue', value: number): void }>()
+
+const onInput = (e: Event) => {
+    const eventTargetValue = (e.target as HTMLInputElement).value
+    emit('update:modelValue', Number(eventTargetValue))
+}
+
+const onInvalidKey = (e: Event) => {
+    const pattern = /[^0-9.]/
+    const eventKey = (e as KeyboardEvent).key
+    const eventTargetValue = (e.target as HTMLInputElement).value
+
+    if (pattern.test(eventKey)) {
+        e.preventDefault()
+    }
+
+    if (eventKey === '.' && eventTargetValue.includes('.')) {
+        e.preventDefault()
+    }
+
+    if (eventKey === '.' && eventTargetValue === '') {
+        e.preventDefault()
+    }
+}
 </script>
