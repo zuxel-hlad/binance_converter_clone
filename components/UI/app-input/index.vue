@@ -1,38 +1,39 @@
 <template>
-    <div
-        class="flex flex-col gap-4 rounded-xl border border-main-gray p-4 outline-none transition-colors hover:border-gray-hover focus:border-focused-input"
-        tabindex="0"
-        :class="{ 'border-focused-input': isInputFocused }"
-    >
+    <div class="flex flex-col gap-4 rounded-xl border border-main-gray p-4 transition-colors hover:border-gray-hover" :class="{ '!border-focused-input': isInputFocused }">
         <div class="flex items-center justify-between gap-3">
-            <span class="text-white">From</span>
+            <span class="capitalize text-white">{{ badge ?? '-' }}</span>
             <span class="text-white">Balance:&nbsp;--&nbsp;USDT</span>
         </div>
         <div class="flex w-full items-center justify-between">
             <div class="relative flex w-full flex-col">
                 <input
-                    :value="props.modelValue"
+                    :value="modelValue"
                     autocomplete="off"
                     placeholder="0.01 - 2500000"
                     class="h-7 w-full border-none bg-transparent text-xl font-medium text-white outline-none placeholder:text-gray-hover"
-                    tabindex="-1"
                     @input="onInput"
                     @keypress="onInvalidKey"
+                    @focus="isInputFocused = true"
+                    @blur="isInputFocused = false"
                 />
-                <span class="text-xs font-normal text-gray-hover">${{ props.modelValue ? props.modelValue : '0.00' }}</span>
+                <span class="text-xs font-normal text-gray-hover">&#8776;&nbsp;${{ modelValue ? modelValue : '0.00' }}</span>
             </div>
             <button type="button" class="flex w-max shrink-0 items-center justify-end [&>svg]:hover:text-white" tabindex="-1" @click="emit('select-token')">
-                <crypto-icon symbol="sol" size="20" class="mr-[6px]" />
+                <icon-crypto coinname="ETH" format="svg" class="mr-[10px] size-5 shrink-0" />
                 <span class="text-base font-medium text-white">USDT</span>
                 <chevron-down-icon class="ml-2 size-5 shrink-0 text-gray-hover transition-colors" />
             </button>
         </div>
     </div>
 </template>
+
 <script setup lang="ts">
 import { ChevronDownIcon } from '@heroicons/vue/20/solid'
+
+import type { IAppInputProps } from './app-input.props'
+
 const isInputFocused = ref<boolean>(false)
-const props = defineProps<{ modelValue: number | undefined }>()
+defineProps<IAppInputProps>()
 const emit = defineEmits<{ (e: 'select-token'): void; (e: 'update:modelValue', value: number): void }>()
 
 const onInput = (e: Event) => {
@@ -58,3 +59,4 @@ const onInvalidKey = (e: Event) => {
     }
 }
 </script>
+<!-- https://api.binance.com/sapi/v1/convert/exchangeInfo -->

@@ -1,9 +1,5 @@
-import CryptoIcon from 'vue-cryptoicon/src/components/Cryptoicon'
-import icon from 'vue-cryptoicon/src/icons'
-
-import { defineNuxtPlugin } from '#app'
+import IconCrypto from 'vue-cryptocurrency-icons/src/components/IconCrypto'
 
 export default defineNuxtPlugin((nuxtApp) => {
-    CryptoIcon.add(icon)
-    nuxtApp.vueApp.component('CryptoIcon', CryptoIcon)
+    nuxtApp.vueApp.component('IconCrypto', IconCrypto)
 })

@@ -1,4 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
     compatibilityDate: '2024-04-03',
     devtools: { enabled: true },
@@ -8,7 +7,7 @@ export default defineNuxtConfig({
         vue: {
             template: {
                 compilerOptions: {
-                    isCustomElement: (tag: string) => ['cryptoicon'].includes(tag),
+                    isCustomElement: (tag: string) => ['IconCrypto'].includes(tag),
                 },
             },
         },
