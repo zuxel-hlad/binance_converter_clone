@@ -1,4 +1,7 @@
 export interface IAppInputProps {
-    badge?: 'from' | 'to'
+    badge?: string
     modelValue: number | undefined
+    assetName: string
+    isError?: boolean
+    placeholder?: string
 }

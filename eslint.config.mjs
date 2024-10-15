@@ -12,6 +12,7 @@ export default withNuxt([
             'import/named': 'off',
             'import/no-cycle': 'off',
             'vue/no-multiple-template-root': 'off',
+            'vue/no-v-html': 'off',
             '@typescript-eslint/no-unused-vars': [
                 'error',
                 {
