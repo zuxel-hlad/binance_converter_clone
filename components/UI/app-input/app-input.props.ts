@@ -4,4 +4,5 @@ export interface IAppInputProps {
     assetName: string
     isError?: boolean
     placeholder?: string
+    errorMessage?: string
 }

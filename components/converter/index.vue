@@ -4,8 +4,9 @@
             v-model.number.trim="fromAssetValue"
             :badge="FieldType.FROM"
             :asset-name="pairObj.fromAsset"
-            :is-error="isInvalidConvertPair"
+            :is-error="isInvalidConvertPair || isFromAssetMinAmountValid"
             :placeholder="`${pairObj.fromAssetMinAmount} - ${pairObj.fromAssetMaxAmount}`"
+            :error-message="isFromAssetMinAmountValid ? `value is less than the minimum limit (${pairObj.fromAssetMinAmount})` : ''"
             @change-asset="onAssetChange(FieldType.FROM)"
         />
         <button
@@ -22,8 +23,9 @@
             v-model.number.trim="toAssetValue"
             :badge="FieldType.TO"
             :asset-name="pairObj.toAsset"
-            :is-error="isInvalidConvertPair"
+            :is-error="isInvalidConvertPair || isToAssetMinAmountValid"
             :placeholder="`${pairObj.toAssetMinAmount} - ${pairObj.toAssetMaxAmount}`"
+                   :error-message="isFromAssetMinAmountValid ? `value is less than the minimum limit (${pairObj.toAssetMinAmount})` : ''"
             @change-asset="onAssetChange(FieldType.TO)"
         />
         <app-button disabled type="button" class="mt-6 h-12 w-full truncate" tabindex="-1">Enter Amount</app-button>
@@ -40,6 +42,7 @@ import { appButton, appInput, appModal } from '~/components/UI'
 import { getAllAssets, getAllConvertPairs } from '~/lib/api'
 import { FieldType, type IConvertPair } from '~/types/assets'
 
+//used variables
 const fromAsset = ref<string>('USDT')
 const toAsset = ref<string>('BTC')
 const assetSource = ref<FieldType | null>(null)
@@ -56,11 +59,16 @@ const pairObj = ref<IConvertPair>({
     toAssetMinAmount: '0',
     toAssetMaxAmount: '0',
 })
+
+// router
 const router = useRouter()
 const route = useRoute()
+
+// get data from api
 const { data: marginAssets } = await useAsyncData('margin-assets', getAllAssets)
 const { data: convertPairs } = await useAsyncData('convert-pairs', getAllConvertPairs)
 
+// set asset name depends on source - FROM or TO
 const onAssetSelected = (assetName: string): void => {
     switch (assetSource.value) {
         case FieldType.FROM:
@@ -77,16 +85,18 @@ const onAssetSelected = (assetName: string): void => {
             throw new Error('Unexpected error.')
     }
 }
-
+// set asset source. FROM or TO
 const onAssetChange = (source: FieldType): void => {
     assetSource.value = source
     assetDialog.value = true
 }
 
+// reverse assets. USDT => BTS to BTC => USDT
 const onReverseAssets = (): void => {
     isReversed.value = !isReversed.value
 }
 
+// if query param have value to and value from, fromAsset - route.query.from, toAsset - route.query.to
 const setInitialConvertPair = (): void => {
     if (route.query?.from && route.query?.to) {
         fromAsset.value = String(route.query.from)
@@ -94,14 +104,37 @@ const setInitialConvertPair = (): void => {
     }
 }
 
+// call setInitialConvertPair
 onBeforeMount(() => {
     setInitialConvertPair()
 })
 
+// clear convert params when page close
 onBeforeUnmount(() => {
     route.query = {}
 })
 
+//validate fromAssetMaxValue
+const isFromAssetMaxAmountValid = computed<boolean>(() => {
+    return fromAssetValue.value && fromAssetValue.value <= Number(pairObj.value.fromAssetMaxAmount) ? true : false
+})
+
+//validate toAssetMaxValue
+const isToAssetMaxAmountValid = computed<boolean>(() => {
+    return toAssetValue.value && toAssetValue.value <= Number(pairObj.value.toAssetMaxAmount) ? true : false
+})
+
+//validate fromAssetMinValue
+const isFromAssetMinAmountValid = computed<boolean>(() => {
+    return fromAssetValue.value && fromAssetValue.value < Number(pairObj.value.fromAssetMinAmount) ? true : false
+})
+
+//validate toAssetMinValue
+const isToAssetMinAmountValid = computed<boolean>(() => {
+    return toAssetValue.value && toAssetValue.value < Number(pairObj.value.toAssetMinAmount) ? true : false
+})
+
+// set convert object pair depends on fromAsset value, and toAsset value
 watchEffect(() => {
     if (convertPairs && convertPairs.value) {
         const pair: IConvertPair | undefined = convertPairs.value.find((asset) => {
@@ -123,6 +156,7 @@ watchEffect(() => {
     }
 })
 
+// set selected assets to query
 watch(
     [pairObj, isReversed],
     () => {
@@ -130,4 +164,15 @@ watch(
     },
     { deep: true },
 )
+
+// reset fromAssetValue and toAssetValue if their value is not valid
+watch([fromAssetValue, toAssetValue], () => {
+    if (!isFromAssetMaxAmountValid.value) {
+        fromAssetValue.value = undefined
+    }
+
+    if (!isToAssetMaxAmountValid.value) {
+        toAssetValue.value = undefined
+    }
+})
 </script>

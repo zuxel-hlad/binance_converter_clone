@@ -14,3 +14,6 @@ export const getAllAssets = async (): Promise<IAsset[] | null> => {
 export const getAllConvertPairs = async (): Promise<IConvertPair[] | null> => {
     return await $fetch(`${API_URL}/sapi/v1/convert/exchangeInfo`)
 }
+
+//prices
+//https://www.binance.com/api/v3/ticker/price

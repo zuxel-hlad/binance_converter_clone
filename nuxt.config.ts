@@ -20,6 +20,6 @@ export default defineNuxtConfig({
         },
     },
     fonts: {
-        families: [{ name: 'IBM Plex Sans', provider: 'google', weights: [400, 500, 600] }],
+        families: [{ name: 'IBM Plex Sans', provider: 'google', weights: [300, 400, 500, 600] }],
     },
 })
