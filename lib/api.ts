@@ -1,4 +1,4 @@
-import type { IAsset, IConvertPair } from '@/types/assets.ts'
+import type { IAsset, IConvertPair, IConvertPairPrice } from '@/types/assets.ts'
 
 import { API_URL, API_KEY } from '@/constants'
 
@@ -15,5 +15,6 @@ export const getAllConvertPairs = async (): Promise<IConvertPair[] | null> => {
     return await $fetch(`${API_URL}/sapi/v1/convert/exchangeInfo`)
 }
 
-//prices
-//https://www.binance.com/api/v3/ticker/price
+export const getConvertPairsPrice = async (): Promise<IConvertPairPrice[] | null> => {
+    return await $fetch(`${API_URL}/api/v3/ticker/price`)
+}

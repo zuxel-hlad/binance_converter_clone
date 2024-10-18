@@ -16,6 +16,11 @@ export interface IConvertPair {
     toAssetMaxAmount: string
 }
 
+export interface IConvertPairPrice {
+    symbol: string
+    price: string
+}
+
 export enum FieldType {
     FROM = 'From',
     TO = 'To',

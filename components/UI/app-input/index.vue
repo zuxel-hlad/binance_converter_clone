@@ -13,7 +13,7 @@
                     <input
                         :value="modelValue"
                         autocomplete="off"
-                        :placeholder="placeholder"
+                        :placeholder="placeholder ?? '0.00 - 00000'"
                         class="h-7 w-full border-none bg-transparent text-xl font-medium text-white outline-none placeholder:text-gray-hover"
                         @input="onInput"
                         @keypress="onInvalidKey"

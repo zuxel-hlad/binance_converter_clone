@@ -4,9 +4,9 @@
             v-model.number.trim="fromAssetValue"
             :badge="FieldType.FROM"
             :asset-name="pairObj.fromAsset"
-            :is-error="isInvalidConvertPair || isFromAssetMinAmountValid"
+            :is-error="isInvalidConvertPair || Boolean(isFromAssetMinAmountValid)"
             :placeholder="`${pairObj.fromAssetMinAmount} - ${pairObj.fromAssetMaxAmount}`"
-            :error-message="isFromAssetMinAmountValid ? `value is less than the minimum limit (${pairObj.fromAssetMinAmount})` : ''"
+            :error-message="isFromAssetMinAmountValid"
             @change-asset="onAssetChange(FieldType.FROM)"
         />
         <button
@@ -23,11 +23,15 @@
             v-model.number.trim="toAssetValue"
             :badge="FieldType.TO"
             :asset-name="pairObj.toAsset"
-            :is-error="isInvalidConvertPair || isToAssetMinAmountValid"
+            :is-error="isInvalidConvertPair || Boolean(isToAssetMinAmountValid)"
             :placeholder="`${pairObj.toAssetMinAmount} - ${pairObj.toAssetMaxAmount}`"
-                   :error-message="isFromAssetMinAmountValid ? `value is less than the minimum limit (${pairObj.toAssetMinAmount})` : ''"
+            :error-message="isFromAssetMinAmountValid"
             @change-asset="onAssetChange(FieldType.TO)"
         />
+        <!-- <div class="flex w-full items-center justify-between gap-2">
+            <span class="w-1/2 text-sm font-light text-white">Price:</span>
+            <span class="w-1/2 text-right text-sm font-light text-white">1{{ toAsset }}&nbsp;&#8776;&nbsp;{{ currentConvertPairPrice ?? '-' }}{{ fromAsset }}</span>
+        </div> -->
         <app-button disabled type="button" class="mt-6 h-12 w-full truncate" tabindex="-1">Enter Amount</app-button>
         <span v-if="isInvalidConvertPair" class="block text-center text-red-500">Invalid convert pair.</span>
     </div>
@@ -67,6 +71,7 @@ const route = useRoute()
 // get data from api
 const { data: marginAssets } = await useAsyncData('margin-assets', getAllAssets)
 const { data: convertPairs } = await useAsyncData('convert-pairs', getAllConvertPairs)
+// const { data: convertPairsPrice } = await useAsyncData('convert-pairs-price', getConvertPairsPrice)
 
 // set asset name depends on source - FROM or TO
 const onAssetSelected = (assetName: string): void => {
@@ -125,13 +130,19 @@ const isToAssetMaxAmountValid = computed<boolean>(() => {
 })
 
 //validate fromAssetMinValue
-const isFromAssetMinAmountValid = computed<boolean>(() => {
-    return fromAssetValue.value && fromAssetValue.value < Number(pairObj.value.fromAssetMinAmount) ? true : false
+const isFromAssetMinAmountValid = computed<string>(() => {
+    if (fromAssetValue.value && fromAssetValue.value < Number(pairObj.value.fromAssetMinAmount)) {
+        return `value is less than the minimum limit (${pairObj.value.fromAssetMinAmount})`
+    }
+    return ''
 })
 
 //validate toAssetMinValue
-const isToAssetMinAmountValid = computed<boolean>(() => {
-    return toAssetValue.value && toAssetValue.value < Number(pairObj.value.toAssetMinAmount) ? true : false
+const isToAssetMinAmountValid = computed<string>(() => {
+    if (toAssetValue.value && toAssetValue.value < Number(pairObj.value.toAssetMinAmount)) {
+        return `value is less than the minimum limit (${pairObj.value.fromAssetMinAmount})`
+    }
+    return ''
 })
 
 // set convert object pair depends on fromAsset value, and toAsset value
@@ -160,7 +171,11 @@ watchEffect(() => {
 watch(
     [pairObj, isReversed],
     () => {
-        router.replace({ query: { from: isReversed.value ? toAsset.value : fromAsset.value, to: isReversed.value ? fromAsset.value : toAsset.value } })
+        if (isReversed.value) {
+            router.replace({ query: { from: toAsset.value, to: fromAsset.value } })
+        } else {
+            router.replace({ query: { from: fromAsset.value, to: toAsset.value } })
+        }
     },
     { deep: true },
 )
