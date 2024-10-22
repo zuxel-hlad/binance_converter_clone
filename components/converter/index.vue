@@ -30,12 +30,15 @@
             @change-asset="onAssetChange(FieldType.TO)"
         />
         <div v-if="!isInvalidConvertPair" class="mb-6 flex w-full items-center justify-between gap-2 text-sm font-normal text-white">
-            <span class="w-1/2">Price:</span>
-            <span class="w-1/2 text-right">1{{ assetPriceMessage }}</span>
+            <span>Price:</span>
+            <span class="text-right">1{{ assetPriceMessage }}</span>
         </div>
         <app-button disabled type="button" class="h-12 w-full truncate" tabindex="-1">Enter Amount</app-button>
         <span v-if="isInvalidConvertPair" class="block text-center text-red-500">Invalid convert pair.</span>
+        <span class="block text-white">from in usd {{ fromAssetUsdPrice }}</span>
+        <span class="block text-white">to in usd {{ toAssetUsdPrice }}</span>
     </div>
+
     <app-modal v-model="assetDialog">
         <assets-dialog :assets="marginAssets ?? []" @on-asset-selected="onAssetSelected" @close-dialog="assetDialog = false" />
     </app-modal>
@@ -44,7 +47,7 @@
 <script setup lang="ts">
 import assetsDialog from '~/components/assets-dialog/index.vue'
 import { appButton, appInput, appModal } from '~/components/UI'
-import { getAllAssets, getAllConvertPairs, getConvertPairsPrice } from '~/lib/api'
+import { getAllAssets, getConvertPairs, getConvertPairsPrice } from '~/lib/api'
 import { FieldType, type IConvertPair } from '~/types/assets'
 
 //used variables
@@ -56,7 +59,6 @@ const isInvalidConvertPair = ref<boolean>(false)
 const isReversed = ref<boolean>(false)
 const fromAssetValue = ref<number | undefined>()
 const toAssetValue = ref<number | undefined>()
-// const assetPrice = ref<string | undefined>()
 const pairObj = ref<IConvertPair>({
     fromAsset: fromAsset.value,
     toAsset: toAsset.value,
@@ -73,7 +75,8 @@ const route = useRoute()
 
 // get data from api
 const { data: marginAssets } = await useAsyncData('margin-assets', getAllAssets)
-const { data: convertPairs } = await useAsyncData('convert-pairs', getAllConvertPairs)
+const { data: convertPairs } = await useAsyncData('convert-pair', getConvertPairs)
+
 const { data: convertPairsPrice } = await useAsyncData('convert-pairs-price', getConvertPairsPrice)
 
 // set asset name depends on source - FROM or TO
@@ -153,7 +156,7 @@ const isToAssetMinAmountValid = computed<string>(() => {
 
 // convert pair price
 const assetPrice = computed<string | undefined>(() => {
-    if (convertPairsPrice && convertPairsPrice.value) {
+    if (convertPairsPrice.value) {
         return convertPairsPrice?.value?.find((priceItem) => {
             return priceItem.symbol === fromAsset.value + toAsset.value || priceItem.symbol === toAsset.value + fromAsset.value
         })?.price
@@ -162,7 +165,23 @@ const assetPrice = computed<string | undefined>(() => {
     return undefined
 })
 
-// asset price message
+const fromAssetUsdPrice = computed<string | undefined>(() => {
+    if (convertPairsPrice.value) {
+        return convertPairsPrice.value.find((item) => item.symbol === `${fromAsset.value}USDT`)
+    }
+    return undefined
+})
+
+const toAssetUsdPrice = computed<string | undefined>(() => {
+    if (convertPairsPrice.value) {
+        return convertPairsPrice.value.find((item) => item.symbol === `${toAsset.value}USDT`)
+    }
+    return undefined
+})
+
+console.log(fromAssetUsdPrice.value);
+
+// convert pair price message
 const assetPriceMessage = computed<string>(() => {
     if (assetPrice.value) {
         return `${pairObj.value.fromIsBase ? pairObj.value.fromAsset : pairObj.value.toAsset} ≈ ${assetPrice.value} ${pairObj.value.fromIsBase ? pairObj.value.toAsset : pairObj.value.fromAsset}`
@@ -172,7 +191,7 @@ const assetPriceMessage = computed<string>(() => {
 
 // set convert object pair depends on fromAsset value, and toAsset value
 watchEffect(() => {
-    if (convertPairs && convertPairs.value) {
+    if (convertPairs.value) {
         const pair: IConvertPair | undefined = convertPairs.value.find((asset) => {
             if (isReversed.value) {
                 return asset.fromAsset === toAsset.value && asset.toAsset === fromAsset.value

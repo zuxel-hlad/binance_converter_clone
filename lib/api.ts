@@ -11,8 +11,8 @@ export const getAllAssets = async (): Promise<IAsset[] | null> => {
     })
 }
 
-export const getAllConvertPairs = async (): Promise<IConvertPair[] | null> => {
-    return await $fetch(`${API_URL}/sapi/v1/convert/exchangeInfo`)
+export const getConvertPairs = async (): Promise<IConvertPair[] | null> => {
+    return await $fetch(`${API_URL}/sapi/v1/convert/exchangeInfo?`)
 }
 
 export const getConvertPairsPrice = async (): Promise<IConvertPairPrice[] | null> => {
