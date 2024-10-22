@@ -18,3 +18,6 @@ export const getAllConvertPairs = async (): Promise<IConvertPair[] | null> => {
 export const getConvertPairsPrice = async (): Promise<IConvertPairPrice[] | null> => {
     return await $fetch(`${API_URL}/api/v3/ticker/price`)
 }
+
+// https://api.binance.com
+// NDvcdHve3wbb3n9jX9X11lUjvx7zIknMTFpLpIVZjebIRM67arI8S0hPs107MHcg

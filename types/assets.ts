@@ -14,6 +14,7 @@ export interface IConvertPair {
     fromAssetMaxAmount: string
     toAssetMinAmount: string
     toAssetMaxAmount: string
+    fromIsBase: boolean
 }
 
 export interface IConvertPairPrice {
