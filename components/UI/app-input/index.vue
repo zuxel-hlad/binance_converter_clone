@@ -20,7 +20,7 @@
                         @focus="isInputFocused = true"
                         @blur="isInputFocused = false"
                     />
-                    <span class="text-xs font-normal text-gray-hover">&#8776;&nbsp;${{ modelValue ? modelValue : '0.00' }}</span>
+                    <span class="text-xs font-normal text-gray-hover">&#8776;&nbsp;${{ modelValue && priceInUsd ? modelValue * priceInUsd : '0.00' }}</span>
                 </div>
                 <button type="button" class="flex w-max shrink-0 items-center justify-end [&>svg]:hover:text-white" tabindex="-1" @click="emit('change-asset')">
                     <div
