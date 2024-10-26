@@ -6,12 +6,12 @@
         >
             <div class="flex items-center justify-between gap-3">
                 <span class="capitalize text-white">{{ badge ?? '-' }}</span>
-                <span class="text-white">Balance:&nbsp;--&nbsp;{{ assetName.toUpperCase() ?? '-' }}</span>
+                <span class="text-white">Balance:&nbsp;--&nbsp;{{ assetName ?? '-' }}</span>
             </div>
             <div class="flex w-full items-center justify-between">
                 <div class="relative flex w-full flex-col">
                     <input
-                        :value="modelValue"
+                        :value="validatedModelValue"
                         autocomplete="off"
                         :placeholder="placeholder ?? '0.00 - 00000'"
                         class="h-7 w-full border-none bg-transparent text-xl font-medium text-white outline-none placeholder:text-gray-hover"
@@ -20,7 +20,10 @@
                         @focus="isInputFocused = true"
                         @blur="isInputFocused = false"
                     />
-                    <span class="text-xs font-normal text-gray-hover">&#8776;&nbsp;${{ modelValue && priceInUsd ? modelValue * priceInUsd : '0.00' }}</span>
+                    <span v-if="assetName !== BASE_FROM_ASSET" class="text-xs font-normal text-gray-hover"
+                        >&#8776;&nbsp;${{ modelValue && priceInUsd ? (Number(modelValue) * priceInUsd).toFixed(8) : '0.00' }}</span
+                    >
+                    <span v-else class="text-xs font-normal text-gray-hover">&#8776;&nbsp;${{ modelValue ? modelValue.toFixed(8) : '0.00' }}</span>
                 </div>
                 <button type="button" class="flex w-max shrink-0 items-center justify-end [&>svg]:hover:text-white" tabindex="-1" @click="emit('change-asset')">
                     <div
@@ -46,8 +49,10 @@ import { binanceCryptoIcons } from 'binance-icons'
 
 import type { IAppInputProps } from './app-input.props'
 
+import { BASE_FROM_ASSET } from '~/constants'
+
 const isInputFocused = ref<boolean>(false)
-defineProps<IAppInputProps>()
+const props = defineProps<IAppInputProps>()
 const emit = defineEmits<{ (e: 'change-asset'): void; (e: 'update:modelValue', value: number): void }>()
 
 const onInput = (e: Event) => {
@@ -72,4 +77,12 @@ const onInvalidKey = (e: Event) => {
         e.preventDefault()
     }
 }
+
+const validatedModelValue = computed<number | undefined>(() => {
+    if (props.modelValue) {
+        return Number(props.modelValue.toFixed(8))
+    }
+
+    return undefined
+})
 </script>

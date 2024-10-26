@@ -1,5 +1,6 @@
 <template>
     <div class="w-full max-w-[432px]">
+        <span class="block text-center text-white">{{ pairObj.fromIsBase }} - {{ isReversed }}</span>
         <app-input
             :badge="FieldType.FROM"
             :asset-name="pairObj.fromAsset"
@@ -7,7 +8,7 @@
             :placeholder="`${pairObj.fromAssetMinAmount} - ${pairObj.fromAssetMaxAmount}`"
             :error-message="isFromAssetMinAmountValid"
             :price-in-usd="assetPrice"
-            :model-value="pairObj.fromIsBase ? toAssetValue : fromAssetValue"
+            :model-value="fromAssetValue"
             @input="onFromAssetChange"
             @change-asset="onAssetChange(FieldType.FROM)"
         />
@@ -22,12 +23,12 @@
             </svg>
         </button>
         <app-input
-            :model-value="pairObj.fromIsBase ? fromAssetValue : toAssetValue"
+            :model-value="toAssetValue"
             :badge="FieldType.TO"
             :asset-name="pairObj.toAsset"
             :is-error="isInvalidConvertPair || Boolean(isToAssetMinAmountValid)"
             :placeholder="`${pairObj.toAssetMinAmount} - ${pairObj.toAssetMaxAmount}`"
-            :error-message="isFromAssetMinAmountValid"
+            :error-message="isToAssetMinAmountValid"
             class="mb-6"
             :price-in-usd="assetPrice"
             @change-asset="onAssetChange(FieldType.TO)"
@@ -49,12 +50,13 @@
 <script setup lang="ts">
 import assetsDialog from '~/components/assets-dialog/index.vue'
 import { appButton, appInput, appModal } from '~/components/UI'
+import { BASE_FROM_ASSET, BASE_TO_ASSET } from '~/constants'
 import { getAllAssets, getConvertPairs, getConvertPairsPrice } from '~/lib/api'
 import { FieldType, type IConvertPair } from '~/types/assets'
 
 //used variables
-const fromAsset = ref<string>('USDT')
-const toAsset = ref<string>('BTC')
+const fromAsset = ref<string>(BASE_FROM_ASSET)
+const toAsset = ref<string>(BASE_TO_ASSET)
 const assetSource = ref<FieldType | null>(null)
 const assetDialog = ref<boolean>(false)
 const isInvalidConvertPair = ref<boolean>(false)
@@ -107,6 +109,13 @@ const onAssetChange = (source: FieldType): void => {
 
 // reverse assets. USDT => BTS to BTC => USDT
 const onReverseAssets = (): void => {
+    const fromValue = fromAssetValue.value
+    const toAsValue = toAssetValue.value
+    nextTick(() => {
+        fromAssetValue.value = toAsValue
+        toAssetValue.value = fromValue
+    })
+
     isReversed.value = !isReversed.value
 }
 
@@ -116,47 +125,37 @@ const setInitialConvertPair = (): void => {
         fromAsset.value = String(route.query.from)
         toAsset.value = String(route.query.to)
     }
-
-    if (route.query?.reversed) {
-        isReversed.value = Boolean(route.query.reversed)
-    }
 }
 
+// set and calc value to From field
 const onFromAssetChange = (e: Event): void => {
     const eventTargetValue = (e.target as HTMLInputElement).value
     fromAssetValue.value = Number(eventTargetValue)
     if (assetPrice.value && fromAssetValue.value) {
         if (pairObj.value.fromIsBase) {
-            toAssetValue.value = fromAssetValue.value * Number(assetPrice.value)
+            toAssetValue.value = fromAssetValue.value * assetPrice.value
         } else {
-            toAssetValue.value = fromAssetValue.value / Number(assetPrice.value)
+            toAssetValue.value = fromAssetValue.value / assetPrice.value
         }
     } else {
         toAssetValue.value = undefined
     }
 }
 
+// set and calc value to To field
 const onToAssetChange = (e: Event): void => {
     const eventTargetValue = (e.target as HTMLInputElement).value
     toAssetValue.value = Number(eventTargetValue)
     if (assetPrice.value && toAssetValue.value) {
         if (pairObj.value.fromIsBase) {
-            fromAssetValue.value = toAssetValue.value / Number(assetPrice.value)
+            fromAssetValue.value = toAssetValue.value / assetPrice.value
         } else {
-            fromAssetValue.value = toAssetValue.value * Number(assetPrice.value)
+            fromAssetValue.value = toAssetValue.value * assetPrice.value
         }
     } else {
         fromAssetValue.value = undefined
     }
 }
-
-// watch(
-//     pairObj,
-//     () => {
-//         console.log(pairObj.value)
-//     },
-//     { deep: true },
-// )
 
 // call setInitialConvertPair
 setInitialConvertPair()
@@ -187,7 +186,7 @@ const isFromAssetMinAmountValid = computed<string>(() => {
 //validate toAssetMinValue
 const isToAssetMinAmountValid = computed<string>(() => {
     if (toAssetValue.value && toAssetValue.value < Number(pairObj.value.toAssetMinAmount)) {
-        return `value is less than the minimum limit (${pairObj.value.fromAssetMinAmount})`
+        return `value is less than the minimum limit (${pairObj.value.toAssetMinAmount})`
     }
     return ''
 })
