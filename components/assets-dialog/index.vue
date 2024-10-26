@@ -4,13 +4,14 @@
             <h3 class="text-xl font-semibold text-white">Select token</h3>
             <button type="button"><x-mark-icon class="size-6 text-white" @click="emit('close-dialog')" /></button>
         </div>
-        <div class="relative h-14 px-6 py-2" tabindex="0">
+        <div class="relative h-14 px-6 py-2">
             <magnifying-glass-icon class="absolute left-9 top-1/2 size-5 -translate-y-1/2 text-gray-hover" />
             <input
                 v-model="searchValue"
                 type="text"
                 class="size-full rounded-lg border border-input-border bg-transparent pl-9 pr-3 text-sm font-medium text-white caret-focused-input outline-none transition-colors placeholder:text-gray-hover hover:border-focused-input"
                 placeholder="Search"
+                tabindex="0"
             />
         </div>
         <perfect-scrollbar>

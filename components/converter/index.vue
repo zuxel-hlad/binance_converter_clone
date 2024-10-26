@@ -6,8 +6,8 @@
             :is-error="isInvalidConvertPair || Boolean(isFromAssetMinAmountValid)"
             :placeholder="`${pairObj.fromAssetMinAmount} - ${pairObj.fromAssetMaxAmount}`"
             :error-message="isFromAssetMinAmountValid"
-            :price-in-usd="fromAssetUsdPrice"
-            :model-value="fromAssetValue"
+            :price-in-usd="assetPrice"
+            :model-value="pairObj.fromIsBase ? toAssetValue : fromAssetValue"
             @input="onFromAssetChange"
             @change-asset="onAssetChange(FieldType.FROM)"
         />
@@ -22,20 +22,20 @@
             </svg>
         </button>
         <app-input
-            :model-value="toAssetValue"
+            :model-value="pairObj.fromIsBase ? fromAssetValue : toAssetValue"
             :badge="FieldType.TO"
             :asset-name="pairObj.toAsset"
             :is-error="isInvalidConvertPair || Boolean(isToAssetMinAmountValid)"
             :placeholder="`${pairObj.toAssetMinAmount} - ${pairObj.toAssetMaxAmount}`"
             :error-message="isFromAssetMinAmountValid"
             class="mb-6"
-            :price-in-usd="toAssetUsdPrice"
+            :price-in-usd="assetPrice"
             @change-asset="onAssetChange(FieldType.TO)"
             @input="onToAssetChange"
         />
         <div v-if="!isInvalidConvertPair" class="mb-6 flex w-full items-center justify-between gap-2 text-sm font-normal text-white">
             <span>Price:</span>
-            <span class="text-right">1{{ assetPriceMessage }}</span>
+            <span class="text-right">{{ assetPriceMessage }}</span>
         </div>
         <app-button disabled type="button" class="h-12 w-full truncate" tabindex="-1">Enter Amount</app-button>
         <span v-if="isInvalidConvertPair" class="block text-center text-red-500">Invalid convert pair.</span>
@@ -125,14 +125,38 @@ const setInitialConvertPair = (): void => {
 const onFromAssetChange = (e: Event): void => {
     const eventTargetValue = (e.target as HTMLInputElement).value
     fromAssetValue.value = Number(eventTargetValue)
-    toAssetValue.value = fromAssetValue.value * fromAssetUsdPrice.value
+    if (assetPrice.value && fromAssetValue.value) {
+        if (pairObj.value.fromIsBase) {
+            toAssetValue.value = fromAssetValue.value * Number(assetPrice.value)
+        } else {
+            toAssetValue.value = fromAssetValue.value / Number(assetPrice.value)
+        }
+    } else {
+        toAssetValue.value = undefined
+    }
 }
 
 const onToAssetChange = (e: Event): void => {
     const eventTargetValue = (e.target as HTMLInputElement).value
     toAssetValue.value = Number(eventTargetValue)
-    fromAssetValue.value = toAssetValue.value * toAssetUsdPrice.value
+    if (assetPrice.value && toAssetValue.value) {
+        if (pairObj.value.fromIsBase) {
+            fromAssetValue.value = toAssetValue.value / Number(assetPrice.value)
+        } else {
+            fromAssetValue.value = toAssetValue.value * Number(assetPrice.value)
+        }
+    } else {
+        fromAssetValue.value = undefined
+    }
 }
+
+// watch(
+//     pairObj,
+//     () => {
+//         console.log(pairObj.value)
+//     },
+//     { deep: true },
+// )
 
 // call setInitialConvertPair
 setInitialConvertPair()
@@ -169,52 +193,20 @@ const isToAssetMinAmountValid = computed<string>(() => {
 })
 
 // convert pair price
-const assetPrice = computed<string | undefined>(() => {
-    if (convertPairsPrice.value) {
-        return convertPairsPrice?.value?.find((priceItem) => {
-            return priceItem.symbol === fromAsset.value + toAsset.value || priceItem.symbol === toAsset.value + fromAsset.value
-        })?.price
-    }
+const assetPrice = computed<number | undefined>(() => {
+    const priceItem = convertPairsPrice.value?.find(
+        (priceItem) => priceItem.symbol === `${fromAsset.value}${toAsset.value}` || priceItem.symbol === `${toAsset.value}${fromAsset.value}`,
+    )
 
-    return undefined
-})
-
-// prise from asset in usd
-const fromAssetUsdPrice = computed<number | undefined>(() => {
-    if (convertPairsPrice.value && fromAsset.value !== 'USDT') {
-        const priceInUSD: string | undefined = convertPairsPrice.value.find((item) => item.symbol === `${fromAsset.value}USDT`)?.price
-        if (priceInUSD) {
-            return Number(priceInUSD)
-        }
-    }
-
-    if (convertPairsPrice.value && fromAsset.value === 'USDT') {
-        return 1
-    }
-    return undefined
-})
-
-// prise to asset in usd
-const toAssetUsdPrice = computed<number | undefined>(() => {
-    if (convertPairsPrice.value && toAsset.value !== 'USDT') {
-        const priceInUSD = convertPairsPrice.value.find((item) => item.symbol === `${toAsset.value}USDT`)?.price
-        if (priceInUSD) {
-            return Number(priceInUSD)
-        }
-    }
-
-    if (convertPairsPrice.value && toAsset.value === 'USDT') {
-        return 1
-    }
-    return undefined
+    return priceItem ? Number(priceItem.price) : undefined
 })
 
 // convert pair price message
 const assetPriceMessage = computed<string>(() => {
-    if (assetPrice.value) {
-        return `${pairObj.value.fromIsBase ? pairObj.value.fromAsset : pairObj.value.toAsset} ≈ ${assetPrice.value} ${pairObj.value.fromIsBase ? pairObj.value.toAsset : pairObj.value.fromAsset}`
-    }
-    return '-'
+    const baseAsset = pairObj.value.fromIsBase ? pairObj.value.fromAsset : pairObj.value.toAsset
+    const targetAsset = pairObj.value.fromIsBase ? pairObj.value.toAsset : pairObj.value.fromAsset
+
+    return `1 ${baseAsset} ≈ ${assetPrice.value} ${targetAsset}`
 })
 
 // set convert object pair depends on fromAsset value, and toAsset value
