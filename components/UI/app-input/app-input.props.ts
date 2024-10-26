@@ -6,4 +6,6 @@ export interface IAppInputProps {
     isError?: boolean
     placeholder?: string
     errorMessage?: string
+    maxAmount: string
+    minAmount: string
 }

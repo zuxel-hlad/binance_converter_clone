@@ -4,11 +4,12 @@
         <app-input
             :badge="FieldType.FROM"
             :asset-name="pairObj.fromAsset"
-            :is-error="isInvalidConvertPair || Boolean(isFromAssetMinAmountValid)"
+            :is-error="isInvalidConvertPair"
             :placeholder="`${pairObj.fromAssetMinAmount} - ${pairObj.fromAssetMaxAmount}`"
-            :error-message="isFromAssetMinAmountValid"
             :price-in-usd="assetPrice"
             :model-value="fromAssetValue"
+            :max-amount="pairObj.fromAssetMaxAmount"
+            :min-amount="pairObj.fromAssetMinAmount"
             @input="onFromAssetChange"
             @change-asset="onAssetChange(FieldType.FROM)"
         />
@@ -26,11 +27,12 @@
             :model-value="toAssetValue"
             :badge="FieldType.TO"
             :asset-name="pairObj.toAsset"
-            :is-error="isInvalidConvertPair || Boolean(isToAssetMinAmountValid)"
+            :is-error="isInvalidConvertPair"
             :placeholder="`${pairObj.toAssetMinAmount} - ${pairObj.toAssetMaxAmount}`"
-            :error-message="isToAssetMinAmountValid"
             class="mb-6"
             :price-in-usd="assetPrice"
+            :max-amount="pairObj.toAssetMaxAmount"
+            :min-amount="pairObj.toAssetMinAmount"
             @change-asset="onAssetChange(FieldType.TO)"
             @input="onToAssetChange"
         />
@@ -131,6 +133,7 @@ const setInitialConvertPair = (): void => {
 const onFromAssetChange = (e: Event): void => {
     const eventTargetValue = (e.target as HTMLInputElement).value
     fromAssetValue.value = Number(eventTargetValue)
+    // problem here! TODO!!!!!!
     if (assetPrice.value && fromAssetValue.value) {
         if (pairObj.value.fromIsBase) {
             toAssetValue.value = fromAssetValue.value * assetPrice.value
@@ -163,32 +166,6 @@ setInitialConvertPair()
 // clear convert params when page close
 onBeforeUnmount(() => {
     route.query = {}
-})
-
-//validate fromAssetMaxValue
-const isFromAssetMaxAmountValid = computed<boolean>(() => {
-    return fromAssetValue.value && fromAssetValue.value <= Number(pairObj.value.fromAssetMaxAmount) ? true : false
-})
-
-//validate toAssetMaxValue
-const isToAssetMaxAmountValid = computed<boolean>(() => {
-    return toAssetValue.value && toAssetValue.value <= Number(pairObj.value.toAssetMaxAmount) ? true : false
-})
-
-//validate fromAssetMinValue
-const isFromAssetMinAmountValid = computed<string>(() => {
-    if (fromAssetValue.value && fromAssetValue.value < Number(pairObj.value.fromAssetMinAmount)) {
-        return `value is less than the minimum limit (${pairObj.value.fromAssetMinAmount})`
-    }
-    return ''
-})
-
-//validate toAssetMinValue
-const isToAssetMinAmountValid = computed<string>(() => {
-    if (toAssetValue.value && toAssetValue.value < Number(pairObj.value.toAssetMinAmount)) {
-        return `value is less than the minimum limit (${pairObj.value.toAssetMinAmount})`
-    }
-    return ''
 })
 
 // convert pair price
@@ -242,15 +219,4 @@ watch(
     },
     { deep: true },
 )
-
-// reset fromAssetValue and toAssetValue if their value is not valid
-watch([fromAssetValue, toAssetValue], () => {
-    if (!isFromAssetMaxAmountValid.value) {
-        fromAssetValue.value = undefined
-    }
-
-    if (!isToAssetMaxAmountValid.value) {
-        toAssetValue.value = undefined
-    }
-})
 </script>
