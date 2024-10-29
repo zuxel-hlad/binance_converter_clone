@@ -1,6 +1,5 @@
 <template>
     <div class="w-full max-w-[432px]">
-        <span class="block text-center text-white">{{ pairObj.fromIsBase }} - {{ isReversed }}</span>
         <app-input
             :badge="FieldType.FROM"
             :asset-name="pairObj.fromAsset"
@@ -63,15 +62,15 @@ const assetSource = ref<FieldType | null>(null)
 const assetDialog = ref<boolean>(false)
 const isInvalidConvertPair = ref<boolean>(false)
 const isReversed = ref<boolean>(false)
-const fromAssetValue = ref<number | undefined>()
-const toAssetValue = ref<number | undefined>()
+const fromAssetValue = ref<string>('')
+const toAssetValue = ref<string>('')
 const pairObj = ref<IConvertPair>({
     fromAsset: fromAsset.value,
     toAsset: toAsset.value,
-    fromAssetMinAmount: '0 - 0',
-    fromAssetMaxAmount: '0 - ',
-    toAssetMinAmount: '0 - 0',
-    toAssetMaxAmount: '0 - 0',
+    fromAssetMinAmount: '0',
+    fromAssetMaxAmount: '0',
+    toAssetMinAmount: '0',
+    toAssetMaxAmount: '0',
     fromIsBase: false,
 })
 
@@ -131,32 +130,33 @@ const setInitialConvertPair = (): void => {
 
 // set and calc value to From field
 const onFromAssetChange = (e: Event): void => {
-    const eventTargetValue = (e.target as HTMLInputElement).value
-    fromAssetValue.value = Number(eventTargetValue)
-    // problem here! TODO!!!!!!
-    if (assetPrice.value && fromAssetValue.value) {
+    const inputValue = (e.target as HTMLInputElement).value
+    fromAssetValue.value = inputValue
+
+    if (assetPrice.value && fromAssetValue.value && fromAssetValue.value <= pairObj.value.fromAssetMaxAmount) {
         if (pairObj.value.fromIsBase) {
-            toAssetValue.value = fromAssetValue.value * assetPrice.value
+            toAssetValue.value = (Number(fromAssetValue.value) * Number(assetPrice.value)).toFixed(8)
         } else {
-            toAssetValue.value = fromAssetValue.value / assetPrice.value
+            toAssetValue.value = (Number(fromAssetValue.value) / Number(assetPrice.value)).toFixed(8)
         }
     } else {
-        toAssetValue.value = undefined
+        toAssetValue.value = ''
     }
 }
 
 // set and calc value to To field
 const onToAssetChange = (e: Event): void => {
-    const eventTargetValue = (e.target as HTMLInputElement).value
-    toAssetValue.value = Number(eventTargetValue)
-    if (assetPrice.value && toAssetValue.value) {
+    const inputValue = (e.target as HTMLInputElement).value
+    toAssetValue.value = inputValue
+
+    if (assetPrice.value && toAssetValue.value && toAssetValue.value <= pairObj.value.toAssetMaxAmount) {
         if (pairObj.value.fromIsBase) {
-            fromAssetValue.value = toAssetValue.value / assetPrice.value
+            fromAssetValue.value = (Number(toAssetValue.value) / Number(assetPrice.value)).toFixed(8)
         } else {
-            fromAssetValue.value = toAssetValue.value * assetPrice.value
+            fromAssetValue.value = (Number(toAssetValue.value) * Number(assetPrice.value)).toFixed(8)
         }
     } else {
-        fromAssetValue.value = undefined
+        fromAssetValue.value = ''
     }
 }
 
@@ -169,12 +169,12 @@ onBeforeUnmount(() => {
 })
 
 // convert pair price
-const assetPrice = computed<number | undefined>(() => {
+const assetPrice = computed<string>(() => {
     const priceItem = convertPairsPrice.value?.find(
         (priceItem) => priceItem.symbol === `${fromAsset.value}${toAsset.value}` || priceItem.symbol === `${toAsset.value}${fromAsset.value}`,
     )
 
-    return priceItem ? Number(priceItem.price) : undefined
+    return priceItem ? priceItem.price : 'N/A'
 })
 
 // convert pair price message
@@ -215,6 +215,17 @@ watch(
             router.replace({ query: { from: toAsset.value, to: fromAsset.value } })
         } else {
             router.replace({ query: { from: fromAsset.value, to: toAsset.value } })
+        }
+    },
+    { deep: true },
+)
+
+watch(
+    pairObj,
+    () => {
+        if (fromAssetValue.value || toAssetValue.value) {
+            fromAssetValue.value = ''
+            toAssetValue.value = ''
         }
     },
     { deep: true },

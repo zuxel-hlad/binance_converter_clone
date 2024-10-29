@@ -21,9 +21,9 @@
                         @blur="isInputFocused = false"
                     />
                     <span v-if="assetName !== BASE_FROM_ASSET" class="text-xs font-normal text-gray-hover"
-                        >&#8776;&nbsp;${{ modelValue && priceInUsd ? (Number(modelValue) * priceInUsd).toFixed(8) : '0.00' }}</span
+                        >&#8776;&nbsp;${{ modelValue.length && !isNaN(parseFloat(priceInUsd)) ? parseFloat((Number(modelValue) * Number(priceInUsd)).toFixed(8)) : '0.00' }}</span
                     >
-                    <span v-else class="text-xs font-normal text-gray-hover">&#8776;&nbsp;${{ modelValue ? modelValue.toFixed(8) : '0.00' }}</span>
+                    <span v-else class="text-xs font-normal text-gray-hover">&#8776;&nbsp;${{ modelValue.length ? parseFloat(Number(modelValue).toFixed(8)) : '0.00' }}</span>
                 </div>
                 <button type="button" class="flex w-max shrink-0 items-center justify-end [&>svg]:hover:text-white" tabindex="-1" @click="emit('change-asset')">
                     <div
@@ -39,7 +39,7 @@
                 </button>
             </div>
         </div>
-        <span v-if="isMinAmountValid" class="block font-light text-red-500">Amoun is to small</span>
+        <span v-if="isMinAmountValid" class="block font-light text-red-500">Amount is less than the minimum amount ({{ minAmount }} {{ assetName }}).</span>
     </div>
 </template>
 
@@ -53,13 +53,15 @@ import { BASE_FROM_ASSET } from '~/constants'
 
 const isInputFocused = ref<boolean>(false)
 const props = defineProps<IAppInputProps>()
-const emit = defineEmits<{ (e: 'change-asset'): void; (e: 'update:modelValue', value: number): void }>()
+const emit = defineEmits<{ (e: 'change-asset'): void; (e: 'update:modelValue', value: string): void }>()
 
+// on input event
 const onInput = (e: Event) => {
     const eventTargetValue = (e.target as HTMLInputElement).value
-    emit('update:modelValue', Number(eventTargetValue))
+    emit('update:modelValue', eventTargetValue)
 }
 
+//validate input values
 const onInvalidKey = (e: Event) => {
     const pattern = /[^0-9.]/
     const eventKey = (e as KeyboardEvent).key
@@ -78,21 +80,11 @@ const onInvalidKey = (e: Event) => {
     }
 }
 
-//validate max value
-const isMaxAmountValid = computed<boolean>(() => {
-    if (props.modelValue && props.maxAmount && props.modelValue > Number(props.maxAmount)) {
-        return true
-    }
-    return false
-})
-
 //validate min-value
 const isMinAmountValid = computed<boolean>(() => {
-    if (props.modelValue && props.minAmount && props.modelValue < Number(props.minAmount)) {
+    if (props.modelValue.length && props.minAmount && props.modelValue < props.minAmount) {
         return true
     }
     return false
 })
-
-// value is less than the minimum limit
 </script>

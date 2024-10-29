@@ -1,11 +1,10 @@
 export interface IAppInputProps {
-    badge?: string
-    modelValue: number | undefined
+    badge: string
+    modelValue: string
     assetName: string
-    priceInUsd: number | undefined
-    isError?: boolean
-    placeholder?: string
-    errorMessage?: string
+    priceInUsd: string
+    isError: boolean
+    placeholder: string
     maxAmount: string
     minAmount: string
 }
