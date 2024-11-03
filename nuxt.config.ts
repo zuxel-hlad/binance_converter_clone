@@ -2,7 +2,7 @@ export default defineNuxtConfig({
     compatibilityDate: '2024-04-03',
     devtools: { enabled: true },
     modules: ['@nuxt/eslint', '@nuxtjs/tailwindcss', '@nuxt/fonts', 'vue3-perfect-scrollbar/nuxt'],
-    plugins: ['~/plugins/vue-cryptoicon.ts'],
+    plugins: [{ src: '~/plugins/vue-cryptoicon.ts', mode: 'client' }],
     vite: {
         vue: {
             template: {
