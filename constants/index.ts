@@ -1,5 +1,3 @@
-export const API_URL = 'https://api.binance.com'
-export const API_KEY = 'NDvcdHve3wbb3n9jX9X11lUjvx7zIknMTFpLpIVZjebIRM67arI8S0hPs107MHcg'
 export const USDT = 'USDT'
 export const BASE_FROM_ASSET = 'USDT'
 export const BASE_TO_ASSET = 'BTC'
