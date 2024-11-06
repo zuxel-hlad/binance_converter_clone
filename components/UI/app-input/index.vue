@@ -21,7 +21,7 @@
                         @blur="isInputFocused = false"
                     />
                     <span v-if="assetName !== BASE_FROM_ASSET" class="text-xs font-normal text-gray-hover"
-                        >&#8776;&nbsp;${{ modelValue.length && !isNaN(parseFloat(priceInUsd)) ? parseFloat((Number(modelValue) * Number(priceInUsd)).toFixed(8)) : '0.00' }}</span
+                        >&#8776;&nbsp;${{ modelValue.length && !isNaN(parseFloat(priceInUsd)) ? parseFloat((Number(priceInUsd) * Number(modelValue)).toFixed(8)) : '0.00' }}</span
                     >
                     <span v-else class="text-xs font-normal text-gray-hover">&#8776;&nbsp;${{ modelValue.length ? parseFloat(Number(modelValue).toFixed(8)) : '0.00' }}</span>
                 </div>

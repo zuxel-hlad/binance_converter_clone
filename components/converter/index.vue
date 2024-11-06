@@ -5,7 +5,7 @@
             :asset-name="pairObj.fromAsset"
             :is-error="isInvalidConvertPair"
             :placeholder="`${pairObj.fromAssetMinAmount} - ${pairObj.fromAssetMaxAmount}`"
-            :price-in-usd="assetPrice"
+            :price-in-usd="fromAssetUSDPrice"
             :model-value="fromAssetValue"
             :max-amount="pairObj.fromAssetMaxAmount"
             :min-amount="pairObj.fromAssetMinAmount"
@@ -29,7 +29,7 @@
             :is-error="isInvalidConvertPair"
             :placeholder="`${pairObj.toAssetMinAmount} - ${pairObj.toAssetMaxAmount}`"
             class="mb-6"
-            :price-in-usd="assetPrice"
+            :price-in-usd="toAssetUSDPrice"
             :max-amount="pairObj.toAssetMaxAmount"
             :min-amount="pairObj.toAssetMinAmount"
             @change-asset="onAssetChange(FieldType.TO)"
@@ -174,7 +174,31 @@ const assetPrice = computed<string>(() => {
         (priceItem) => priceItem.symbol === `${fromAsset.value}${toAsset.value}` || priceItem.symbol === `${toAsset.value}${fromAsset.value}`,
     )
 
-    return priceItem ? priceItem.price : 'N/A'
+    return priceItem ? String(parseFloat(Number(priceItem.price).toFixed(8))) : 'N/A'
+})
+
+// from asset usd price
+const fromAssetUSDPrice = computed<string>(() => {
+    if (pairObj.value.fromAsset === 'USDT') {
+        return '1'
+    }
+    const price: string | undefined = convertPairsPrice.value?.find((item) => item.symbol === `${pairObj.value.fromAsset}USDT`)?.price
+    if (price) {
+        return price
+    }
+    return 'N/A'
+})
+
+// to asset usd price
+const toAssetUSDPrice = computed<string>(() => {
+    if (pairObj.value.toAsset === 'USDT') {
+        return '1'
+    }
+    const price: string | undefined = convertPairsPrice.value?.find((item) => item.symbol === `${pairObj.value.toAsset}USDT`)?.price
+    if (price) {
+        return price
+    }
+    return 'N/A'
 })
 
 // convert pair price message
@@ -220,14 +244,10 @@ watch(
     { deep: true },
 )
 
-watch(
-    pairObj,
-    () => {
-        if (fromAssetValue.value || toAssetValue.value) {
-            fromAssetValue.value = ''
-            toAssetValue.value = ''
-        }
-    },
-    { deep: true },
-)
+watch([fromAsset, toAsset], ([newFromAsset, newToAsset], [prevFromAsset, prevToAsset]) => {
+    if (prevFromAsset !== newFromAsset || prevToAsset !== newToAsset) {
+        fromAssetValue.value = ''
+        toAssetValue.value = ''
+    }
+})
 </script>
