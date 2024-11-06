@@ -41,6 +41,9 @@
         </div>
         <app-button disabled type="button" class="h-12 w-full truncate" tabindex="-1">Enter Amount</app-button>
         <span v-if="isInvalidConvertPair" class="block text-center text-red-500">Invalid convert pair.</span>
+        <span class="block text-red-500">assetsError: {{ assetsError?.message }}</span>
+        <span class="block text-red-500">convertPairsError: {{ convertPairsError?.message }}</span>
+        <span class="block text-red-500">convertPairsPriceError: {{ convertPairsPriceError?.message }}</span>
     </div>
 
     <app-modal v-model="assetDialog">
@@ -79,10 +82,10 @@ const router = useRouter()
 const route = useRoute()
 
 // get data from api
-const { data: marginAssets } = await useAsyncData('margin-assets', getAllAssets)
-const { data: convertPairs } = await useAsyncData('convert-pair', getConvertPairs)
+const { data: marginAssets, error: assetsError } = await useAsyncData('margin-assets', getAllAssets)
+const { data: convertPairs, error: convertPairsError } = await useAsyncData('convert-pair', getConvertPairs)
 
-const { data: convertPairsPrice } = await useAsyncData('convert-pairs-price', getConvertPairsPrice)
+const { data: convertPairsPrice, error: convertPairsPriceError } = await useAsyncData('convert-pairs-price', getConvertPairsPrice)
 
 // set asset name depends on source - FROM or TO
 const onAssetSelected = (assetName: string): void => {
