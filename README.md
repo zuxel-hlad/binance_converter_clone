@@ -15,6 +15,10 @@ npm i
 # get api key from binance
 you need to register on https://www.binance.com, than you need get api key in your profile
 
+# create .env file
+you find the .env.sample file in project root.
+create .env file and copy the contents from the file env.sample
+
 ## Production
 
 Build the application for production:
