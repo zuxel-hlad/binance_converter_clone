@@ -1,75 +1,27 @@
-# Nuxt 3 Minimal Starter
-
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
-
 ## Setup
 
-Make sure to install the dependencies:
+# you need to instal node.js
+download here: https://nodejs.org
 
-```bash
-# npm
-npm install
+# check node version
+open terminal and write this: node -v or node --version
 
-# pnpm
-pnpm install
+# check npm version
+open terminal and write this: npm -v or npm --version
 
-# yarn
-yarn install
+# install the dependencies
+npm i
 
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
+# get api key from binance
+you need to register on https://www.binance.com, than you need get api key in your profile
 
 ## Production
 
 Build the application for production:
 
-```bash
 # npm
 npm run build
 
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
+# preview production build:
 npm run preview
 
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
